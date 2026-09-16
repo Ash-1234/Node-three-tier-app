@@ -6,11 +6,11 @@ pipeline
     stage(checkout){
         steps{
             checkout([$class: 'GitSCM',
-                          branches: [[name: '*/main']],
+                          branches: [[name: '*/node-app']],
                           doGenerateSubmoduleConfigurations: false,
                           extensions: [],
                           submoduleCfg: [],
-                          userRemoteConfigs: [[url: https://github.com/Heyyprakhar1/Node-three-tier-app.git']]])
+                          userRemoteConfigs: [[url: 'https://github.com/Ash-1234/Node-three-tier-app.git']]])
         }
     
 
