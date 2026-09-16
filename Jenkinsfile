@@ -1,65 +1,73 @@
-pipeline 
-{
-  agent any
+```groovy
+pipeline {
+    agent any
 
-  stages{
-    stage(checkout){
-        steps{
-            checkout([$class: 'GitSCM',
-                          branches: [[name: '*/node-app']],
-                          doGenerateSubmoduleConfigurations: false,
-                          extensions: [],
-                          submoduleCfg: [],
-                          userRemoteConfigs: [[url: 'https://github.com/Ash-1234/Node-three-tier-app.git']]])
-        }
-    
+    stages {
 
-    }
-  
-
-    stage(install dependencies){
-        parallel{
-            stage('frontend dependencies'){
-                steps{
-                    dir(frontend)
-                      sh '''
-                         npn ci
-                         '''
-                }
-            }
-            stage('backend dependencies'){
-                steps{
-                    dir(backend)
-                      sh '''
-                         npn ci
-                         '''
-                }
+        stage('Checkout') {
+            steps {
+                checkout([
+                    $class: 'GitSCM',
+                    branches: [[name: '*/node-app']],
+                    doGenerateSubmoduleConfigurations: false,
+                    extensions: [],
+                    submoduleCfg: [],
+                    userRemoteConfigs: [[
+                        url: 'https://github.com/Ash-1234/Node-three-tier-app.git'
+                    ]]
+                ])
             }
         }
-    }
 
-    stage(unit testing){
-        parallel{
-            stage( unit test on frontend){
-              steps{
-                dir(frontend)
-                   sh '''
-                      npm test -- --watchAll=false
-                      '''
+        stage('Install Dependencies') {
+            parallel {
 
-              }
+                stage('Frontend Dependencies') {
+                    steps {
+                        dir('frontend') {
+                            sh '''
+                                npm ci
+                            '''
+                        }
+                    }
+                }
+
+                stage('Backend Dependencies') {
+                    steps {
+                        dir('backend') {
+                            sh '''
+                                npm ci
+                            '''
+                        }
+                    }
+                }
             }
-            stage( unit test on backend){
-              steps{
-                dir(backend)
-                   sh '''
-                      npm test -- --watchAll=false
-                      '''
+        }
 
-              }
+        stage('Unit Testing') {
+            parallel {
+
+                stage('Unit Test - Frontend') {
+                    steps {
+                        dir('frontend') {
+                            sh '''
+                                npm test -- --watchAll=false
+                            '''
+                        }
+                    }
+                }
+
+                stage('Unit Test - Backend') {
+                    steps {
+                        dir('backend') {
+                            sh '''
+                                npm test -- --watchAll=false
+                            '''
+                        }
+                    }
+                }
             }
+        }
     }
-
-  }
-
 }
+```
