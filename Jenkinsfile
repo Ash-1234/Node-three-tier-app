@@ -23,9 +23,61 @@ pipeline {
                 sh '''
                     trivy fs \
                     --severity HIGH,CRITICAL \
-                    --exit-code 1 \
+                    
                     .
                 '''
+            }
+        }
+
+        stage('Docker Build') {
+            parallel {
+
+                stage('Build Frontend') {
+                    steps {
+                        sh '''
+                            docker build \
+                            -t node-frontend:${BUILD_NUMBER} \
+                            ./frontend
+                        '''
+                    }
+                }
+
+                stage('Build Backend') {
+                    steps {
+                        sh '''
+                            docker build \
+                            -t node-backend:${BUILD_NUMBER} \
+                            ./backend
+                        '''
+                    }
+                }
+            }
+        }
+
+        stage('Trivy Image Scan') {
+            parallel {
+
+                stage('Scan Frontend') {
+                    steps {
+                        sh '''
+                            trivy image \
+                            --severity HIGH,CRITICAL \
+                            --exit-code 1 \
+                            node-frontend:${BUILD_NUMBER}
+                        '''
+                    }
+                }
+
+                stage('Scan Backend') {
+                    steps {
+                        sh '''
+                            trivy image \
+                            --severity HIGH,CRITICAL \
+                            --exit-code 1 \
+                            node-backend:${BUILD_NUMBER}
+                        '''
+                    }
+                }
             }
         }
     }
